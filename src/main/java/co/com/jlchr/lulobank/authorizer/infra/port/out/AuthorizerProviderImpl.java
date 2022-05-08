@@ -46,18 +46,24 @@ public class AuthorizerProviderImpl implements AuthorizerProvider {
     }
 
     /**
-     * Find a transaction by ID
+     * Find a transaction by ID.
      *
      * @param id
      * @return
      */
     @Override
     public Optional<Transaction> findTransactionById(Long id) {
+
         return authorizerData.getTransactions().stream()
                 .filter(transaction -> id.equals(transaction.getId()))
                 .findFirst();
     }
 
+    /**
+     * Create a Transaction.
+     * @param transaction
+     * @return
+     */
     @Override
     public Transaction createTransaction(Transaction transaction) {
         authorizerData.getTransactions().add(transaction);

@@ -72,7 +72,6 @@ public class TechAssessmentApplication implements CommandLineRunner {
                 System.out.println(objectMapper.writeValueAsString(authorizerUseCase.executeOperation(authorizerRequest, Operation.ACCOUNT_CREATION)));
             } else if (nonNull(authorizerRequest) && nonNull(authorizerRequest.getTransaction())) {
                 System.out.println(objectMapper.writeValueAsString(authorizerUseCase.executeOperation(authorizerRequest, Operation.TRANSACTION_AUTHORIZATION)));
-                System.out.println("transaccion");
             }
         }
     }
