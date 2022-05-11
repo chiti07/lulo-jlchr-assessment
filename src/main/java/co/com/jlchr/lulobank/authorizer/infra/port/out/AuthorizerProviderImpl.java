@@ -42,6 +42,7 @@ public class AuthorizerProviderImpl implements AuthorizerProvider {
     @Override
     public Account createAccount(Account account) {
         authorizerData.getAccounts().add(account);
+        setCurrentAccount(account);
         return account;
     }
 
@@ -68,6 +69,26 @@ public class AuthorizerProviderImpl implements AuthorizerProvider {
     public Transaction createTransaction(Transaction transaction) {
         authorizerData.getTransactions().add(transaction);
         return transaction;
+    }
+
+    /**
+     * Set the new balance of the account
+     *
+     * @param account
+     * @return
+     */
+    @Override
+    public void setCurrentAccount(final Account account) {
+        authorizerData.setCurrentAccount(account);
+    }
+
+    /**
+     * Get the current balance
+     *
+     */
+    @Override
+    public Optional<Account> getCurrentAccount() {
+        return Optional.ofNullable(authorizerData.getCurrentAccount());
     }
 
 

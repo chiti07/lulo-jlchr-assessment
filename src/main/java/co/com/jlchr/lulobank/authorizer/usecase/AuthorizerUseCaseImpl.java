@@ -8,10 +8,6 @@ import co.com.jlchr.lulobank.authorizer.infra.port.in.dto.AuthorizerResponse;
 import co.com.jlchr.lulobank.authorizer.infra.port.out.persistence.AuthorizerData;
 import co.com.jlchr.lulobank.authorizer.usecase.provider.AuthorizerProvider;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
 /**
  * Implementation class of the Authorizer
  */
@@ -25,11 +21,6 @@ public class AuthorizerUseCaseImpl implements AuthorizerUseCase {
      * Object to get Data from the DTO Objedts
      */
     private final AuthorizerData authorizerData;
-
-    /**
-     * Account Object
-     */
-    private Account account;
 
     public AuthorizerUseCaseImpl(final AuthorizerProvider authorizerProvider, final AuthorizerData authorizerData) {
         this.authorizerProvider = authorizerProvider;
@@ -63,16 +54,48 @@ public class AuthorizerUseCaseImpl implements AuthorizerUseCase {
                                         .build());
                             });
         } else {
-            if (authorizerData.getAccounts().isEmpty()) {
-                responseBuilder.account(Account.builder()
-                        .build())
-                        .violations(Violations.ACCOUNT_NOT_INITIALIZED.getViolationString());
-
-            } else {
-
-            }
+            transactionValidation(request, responseBuilder);
         }
 
         return responseBuilder.build();
+    }
+
+
+    /**
+     * Validates all the possible violations for the transaction
+     * @param request
+     * @param responseBuilder
+     */
+    private void transactionValidation(AuthorizerRequest request, AuthorizerResponse.AuthorizerResponseBuilder responseBuilder) {
+        authorizerProvider.getCurrentAccount()
+                .ifPresentOrElse(account -> {
+                            limitValidation(request, responseBuilder, account);
+                        },
+                        () -> responseBuilder.account(Account.builder()
+                                .build())
+                                .violations(Violations.ACCOUNT_NOT_INITIALIZED.getViolationString()));
+    }
+
+
+    /**
+     * Validates the limit violation
+     * @param request
+     * @param responseBuilder
+     * @param account
+     */
+    private void limitValidation(AuthorizerRequest request, AuthorizerResponse.AuthorizerResponseBuilder responseBuilder, Account account) {
+        Long availableBalance = (account.getAvailableLimit() - request.getTransaction().getAmount());
+        if (availableBalance < 0) {
+            responseBuilder.account(Account.builder()
+                    .build())
+                    .violations(Violations.INSUFFICIENT_LIMIT.getViolationString());
+        } else {
+            final var newAccount = authorizerProvider.createAccount(request.getAccount());
+            responseBuilder.account(Account.builder()
+                    .id(account.getId())
+                    .availableLimit(availableBalance)
+                    .cardActivated(account.getCardActivated())
+                    .build());
+        }
     }
 }
