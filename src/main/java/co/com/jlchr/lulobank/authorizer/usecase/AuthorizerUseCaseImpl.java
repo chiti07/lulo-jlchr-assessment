@@ -5,7 +5,6 @@ import co.com.jlchr.lulobank.authorizer.entity.Operation;
 import co.com.jlchr.lulobank.authorizer.entity.Violations;
 import co.com.jlchr.lulobank.authorizer.infra.port.in.dto.AuthorizerRequest;
 import co.com.jlchr.lulobank.authorizer.infra.port.in.dto.AuthorizerResponse;
-import co.com.jlchr.lulobank.authorizer.infra.port.out.persistence.AuthorizerData;
 import co.com.jlchr.lulobank.authorizer.usecase.provider.AuthorizerProvider;
 
 /**
@@ -17,14 +16,9 @@ public class AuthorizerUseCaseImpl implements AuthorizerUseCase {
      */
     private final AuthorizerProvider authorizerProvider;
 
-    /**
-     * Object to get Data from the DTO Objedts
-     */
-    private final AuthorizerData authorizerData;
 
-    public AuthorizerUseCaseImpl(final AuthorizerProvider authorizerProvider, final AuthorizerData authorizerData) {
+    public AuthorizerUseCaseImpl(final AuthorizerProvider authorizerProvider) {
         this.authorizerProvider = authorizerProvider;
-        this.authorizerData = authorizerData;
     }
 
     /**
@@ -68,9 +62,8 @@ public class AuthorizerUseCaseImpl implements AuthorizerUseCase {
      */
     private void transactionValidation(AuthorizerRequest request, AuthorizerResponse.AuthorizerResponseBuilder responseBuilder) {
         authorizerProvider.getCurrentAccount()
-                .ifPresentOrElse(account -> {
-                            limitValidation(request, responseBuilder, account);
-                        },
+                .ifPresentOrElse(account ->
+                                limitValidation(request, responseBuilder, account),
                         () -> responseBuilder.account(Account.builder()
                                 .build())
                                 .violations(Violations.ACCOUNT_NOT_INITIALIZED.getViolationString()));
@@ -87,10 +80,11 @@ public class AuthorizerUseCaseImpl implements AuthorizerUseCase {
         Long availableBalance = (account.getAvailableLimit() - request.getTransaction().getAmount());
         if (availableBalance < 0) {
             responseBuilder.account(Account.builder()
+                    .cardActivated(account.getCardActivated())
+                    .availableLimit(account.getAvailableLimit())
                     .build())
                     .violations(Violations.INSUFFICIENT_LIMIT.getViolationString());
         } else {
-            final var newAccount = authorizerProvider.createAccount(request.getAccount());
             responseBuilder.account(Account.builder()
                     .id(account.getId())
                     .availableLimit(availableBalance)
