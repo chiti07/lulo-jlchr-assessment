@@ -37,4 +37,16 @@ public interface AuthorizerProvider {
      */
     Transaction createTransaction(Transaction transaction);
 
+    /**
+     * Set the new balance of the account
+     * @param account
+     * @return
+     */
+    void setCurrentAccount(Account account);
+
+    /**
+     * Get the current balance
+     */
+    Optional<Account> getCurrentAccount();
+
 }

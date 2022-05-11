@@ -52,6 +52,7 @@ public class TechAssessmentApplication implements CommandLineRunner {
             readLines(scanner);
         } catch (RuntimeException ex) {
             //TODO: Exception Handler
+            ex.getMessage();
         }
     }
 
@@ -62,7 +63,8 @@ public class TechAssessmentApplication implements CommandLineRunner {
         while (stillRunning) {
             final var line = scanner.nextLine();
             if (EXIT_COMMAND.equals(line)) {
-                System.out.println("Thanks for coming :).");
+                System.out.println("Shutting down");
+
                 stillRunning = false;
                 break;
             }
