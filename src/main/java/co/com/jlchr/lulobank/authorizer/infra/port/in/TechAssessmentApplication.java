@@ -60,21 +60,26 @@ public class TechAssessmentApplication implements CommandLineRunner {
 
         var stillRunning = true;
 
-        while (stillRunning) {
-            final var line = scanner.nextLine();
-            if (EXIT_COMMAND.equals(line)) {
-                System.out.println("Shutting down");
+        try {
+            while (stillRunning) {
+                final var line = scanner.nextLine();
+                if (EXIT_COMMAND.equals(line)) {
+                    System.out.println("Shutting down");
 
-                stillRunning = false;
-                break;
+                    stillRunning = false;
+                    break;
+                }
+                final var objectMapper = new ObjectMapper();
+                final var authorizerRequest = objectMapper.readValue(line, AuthorizerRequest.class);
+                if (nonNull(authorizerRequest) && nonNull(authorizerRequest.getAccount())) {
+                    System.out.println(objectMapper.writeValueAsString(authorizerUseCase.executeOperation(authorizerRequest, Operation.ACCOUNT_CREATION)));
+                } else if (nonNull(authorizerRequest) && nonNull(authorizerRequest.getTransaction())) {
+                    System.out.println(objectMapper.writeValueAsString(authorizerUseCase.executeOperation(authorizerRequest, Operation.TRANSACTION_AUTHORIZATION)));
+                }
             }
-            final var objectMapper = new ObjectMapper();
-            final var authorizerRequest = objectMapper.readValue(line, AuthorizerRequest.class);
-            if (nonNull(authorizerRequest) && nonNull(authorizerRequest.getAccount())) {
-                System.out.println(objectMapper.writeValueAsString(authorizerUseCase.executeOperation(authorizerRequest, Operation.ACCOUNT_CREATION)));
-            } else if (nonNull(authorizerRequest) && nonNull(authorizerRequest.getTransaction())) {
-                System.out.println(objectMapper.writeValueAsString(authorizerUseCase.executeOperation(authorizerRequest, Operation.TRANSACTION_AUTHORIZATION)));
-            }
+        }catch (Exception e){
+            System.out.println("The input typed is not valid or bad formatted.");
         }
+
     }
 }
